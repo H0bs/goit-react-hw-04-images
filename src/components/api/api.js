@@ -11,8 +11,9 @@ export const fetchPhotos = async (value, page, per_page) => {
       image_type: 'photo',
       orientation: 'horizontal',
       per_page: per_page,
-    }
-  });
+    },
+  }
+  );
 
   return await response.data.hits.map(photo => ({
     id: photo.id,

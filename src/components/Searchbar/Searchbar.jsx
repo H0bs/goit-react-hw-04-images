@@ -1,34 +1,26 @@
 import PropTypes from "prop-types";
-import React, { Component } from "react";
+import { useState } from "react";
 import { Searchbar, SearchForm, SearchFormButton, SearchFormButtonLabel, SearchFormInput } from './Searchbar.styled';
 
-export class SearchBar extends Component {
-  state = {
-    inputValue: '',
-  }
-  onChange = e => { 
-    this.setState({ inputValue: e.target.value });
-  }
+export const SearchBar = ({ onSubmit }) => {
+  const [inputValue, setInputValue] = useState('');
   
-  onSubmit = e => {
-    const { inputValue } = this.state;
+  const onChange = e => {
+    setInputValue(e.target.value);
+  }
+  const handleSubmit = e => {
     e.preventDefault();
     if (inputValue.trim() === '') {
       alert('Please, enter a value.');
       return;
     }
-    this.props.onSubmit(inputValue);
-    this.setState({ inputValue: '' });
+    onSubmit(inputValue);
+    setInputValue('');
   }
-
-  render() {
-    const { inputValue } = this.state;
-    const { onSubmit, onChange } = this;
-    
-    return (
-      <Searchbar>
+  return (
+    <Searchbar>
         <SearchForm
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
         >
           <SearchFormButton type="submit">
             <SearchFormButtonLabel>Search</SearchFormButtonLabel>
@@ -44,8 +36,7 @@ export class SearchBar extends Component {
           />
         </SearchForm>
       </Searchbar>
-    )
-  }
+  )
 }
 
 SearchBar.protoTypes = {

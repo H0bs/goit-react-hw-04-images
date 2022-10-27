@@ -1,91 +1,73 @@
-import React, { Component } from "react";
+import { useState, useEffect } from "react";
 import { SearchBar } from "./Searchbar/Searchbar";
-import { ImageGallery } from "./ImageGallery/ImageGallery"
+import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Container } from "./App.styled";
-import { Spinner } from "./Loader/Loader"
-import { Button } from "./Button/Button"
-import { fetchPhotos } from "./api/api"
-import { Modal } from "./Modal/Modal"
+import { Spinner } from "./Loader/Loader";
+import { Button } from "./Button/Button";
+import { fetchPhotos } from "./api/api";
+import { Modal } from "./Modal/Modal";
 
-export class App extends Component {
-  state = {
-    inputValue: "",
-    photos: [],
-    page: 1,
-    per_page: 12,
-    showButton: "hidden",
-    showLoader: false,
-    showModal: false,
-    imageModal: null,
-    error: null,
-  }
+export const App = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [per_page] = useState(12);
+  const [showButton, setShowButton] = useState('hidden');
+  const [showLoader, setShowLoader] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [imageModal, setImageModal] = useState(null);
+  const [error, setError] = useState(null);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { photos, inputValue, page, per_page } = this.state;
-
-    if (prevState.inputValue !== inputValue) {
-      this.setState({page: 1, photos:[]})
+  useEffect(() => {
+    if (!inputValue) {
+      return;
     }
 
-    if ((prevState.inputValue === inputValue & prevState.page === page) ||
-      (prevState.inputValue !== inputValue & page !== 1)) {
-      return
-    }
-    this.setState({ showLoader: true });
-    try {
+    setShowLoader('true');
+
+    const fetchData = async () => {
+      try {
+        const response = await fetchPhotos(inputValue, page, per_page);
+        setPhotos(photos => [...photos, ...response]);
+        setShowLoader('false');
+
+        response.length === per_page ? setShowButton('show') : setShowButton('hidden');
       
-    const response = await fetchPhotos(inputValue, page, per_page);
-      this.setState(prevState => {
-        return {
-          photos: [...prevState.photos, ...response],
-          showLoader: false,
-        }
-      })
-    
-      if (photos !== [] & response.length === per_page) {
-        this.setState({showButton: "show"})
-      } else {
-        this.setState({showButton: "hidden"})
+      } catch (error) {
+        setError(error);
       }
-    } catch (error) {
-      this.setState({ error });
     }
+    fetchData();
+  }, [inputValue, page, per_page]);
+
+  const onSubmit = e => {
+    setInputValue(e);
+    setPhotos([]);
+    setPage(1);
   }
 
-  onSubmit = e => {
-    this.setState({ inputValue: e })
+  const changePage = () => {
+    setPage(state => state + 1);
   }
 
-  changePage = () => {
-    this.setState({page: this.state.page +1})
+  const togleModal = () => {
+    setShowModal(!showModal);
   }
 
-  togleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-  }))
+  const imgForModal = ({src, alt}) => {
+    setImageModal({ src, alt });
+    togleModal();
   }
-
-  imgForModal = ({src, alt}) => {
-    this.setState({
-      imageModal: { src, alt },
-  });
-    this.togleModal();
-  }
-
-  render() {
-    const { photos, showButton, showLoader, showModal , imageModal, error } = this.state;
-    return (
-      <Container>
-        {showLoader === true && <Spinner />}
+  return (
+    <Container>
+      <SearchBar onSubmit={onSubmit} />
         {error && <p>Whoops, something went wrong: {error.message}</p>}
-        <SearchBar onSubmit={this.onSubmit} />
-        {photos.length !== 0 && <ImageGallery photos={photos} onClickModal={this.imgForModal} />}
-        {showButton === "show" && <Button onClick={this.changePage} />}
-        {showModal === true && <Modal onClose={this.togleModal}>
+        {showLoader === true && <Spinner />}
+        {photos.length !== 0 && <ImageGallery photos={photos} onClickModal={imgForModal} />}
+        {showButton === "show" && <Button onClick={changePage} />}
+        {showModal === true && <Modal onClose={togleModal}>
           <img src={imageModal.src} alt={imageModal.alt} width={960}/>
         </Modal>}
       </Container>
-    )
-  }
+  )
 }
