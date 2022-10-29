@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ImageGalleryList } from "./ImageGallery.styled"
-import { GalleryItem } from "../ImageGalleryItem/ImageGalleryItem"
+import { ImageGalleryList } from "./ImageGallery.styled";
+import { GalleryItem } from "../ImageGalleryItem/ImageGalleryItem";
 
 export const ImageGallery = ({ photos, onClickModal }) => {
   return (
@@ -26,6 +26,7 @@ ImageGallery.propTypes = {
       webformatURL: PropTypes.string.isRequired,
       tags: PropTypes.string.isRequired,
       largeImageURL: PropTypes.string.isRequired,
-    })
-  ),
+    }).isRequired,
+  ).isRequired,
+  onClickModal: PropTypes.func.isRequired,
 };
